@@ -1,7 +1,7 @@
 # 🚔 Criminal Record Management System (CRMS)
 
-> \*"I am the one who normalizes." — Walter White, on 3NF\*
-> \*"The queries are dark and full of errors." — Jon Snow, on SQL\*
+> \\\*"I am the one who normalizes." — Walter White, on 3NF\\\*
+> \\\*"The queries are dark and full of errors." — Jon Snow, on SQL\\\*
 
 **NIE Mysuru | Department of Information Science \& Engineering | Batch B1**
 
@@ -25,9 +25,9 @@ CRMS-DBMS-Project/
 
 ├── queries.sql       → SQL queries covering key concepts
 
-├── er\_diagram1.jpg   → ER Diagram (Part 1)
+├── er\\\_diagram1.jpg   → ER Diagram (Part 1)
 
-├── er\_diagram2.jpg   → ER Diagram (Part 2)
+├── er\\\_diagram2.jpg   → ER Diagram (Part 2)
 
 └── README.md         → Project documentation
 
@@ -227,7 +227,7 @@ Links cases to crimes. A case can involve many crimes; a crime can appear in man
 3. Run `insert.sql` second — inserts all sample data
 4. Run `queries.sql` third — execute any or all queries
 
-> Make sure to run them \*\*in order\*\*. Running insert before schema will throw errors.
+> Make sure to run them \\\*\\\*in order\\\*\\\*. Running insert before schema will throw errors.
 
 \---
 

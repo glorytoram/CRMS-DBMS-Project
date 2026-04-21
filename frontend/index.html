@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CRMS — Criminal Record Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --red:    #e63946;
+    --amber:  #f4a261;
+    --green:  #2a9d8f;
+    --dark:   #0a0a0f;
+    --dark2:  #111118;
+    --dark3:  #1a1a24;
+    --dark4:  #22222e;
+    --border: #2e2e3e;
+    --text:   #c8c8d8;
+    --muted:  #666680;
+    --white:  #f0f0f8;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── SCANLINE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--dark2);
+    border-bottom: 2px solid var(--red);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.12em;
+    color: var(--white);
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+
+  .logo span { color: var(--red); }
+
+  .badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    background: var(--red);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.08em;
+    animation: blink 2s step-end infinite;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .header-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  /* ── TICKER ── */
+  .ticker {
+    background: var(--red);
+    color: #fff;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    padding: 6px 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .ticker-inner {
+    display: inline-block;
+    animation: scroll 28s linear infinite;
+  }
+
+  @keyframes scroll { from{transform:translateX(100vw)} to{transform:translateX(-100%)} }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 1.5rem;
+  }
+
+  /* ── SIDEBAR ── */
+  aside {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .sidebar-section {
+    background: var(--dark2);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--red);
+    padding: 1rem;
+  }
+
+  .sidebar-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-row:last-child { border-bottom: none; }
+
+  .stat-label {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  .stat-value.red   { color: var(--red); }
+  .stat-value.amber { color: var(--amber); }
+  .stat-value.green { color: var(--green); }
+
+  /* severity bar */
+  .sev-bar { margin-top: 0.3rem; }
+  .sev-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .sev-label { font-size: 0.72rem; color: var(--muted); width: 60px; }
+  .sev-track { flex: 1; height: 5px; background: var(--dark4); border-radius: 2px; overflow: hidden; }
+  .sev-fill  { height: 100%; border-radius: 2px; transition: width 1s ease; }
+  .sev-count { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--muted); width: 16px; text-align: right; }
+
+  /* nav tabs */
+  nav.tabs { display: flex; flex-direction: column; gap: 4px; }
+
+  .tab-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    padding: 9px 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .tab-btn:hover { border-color: var(--red); color: var(--white); }
+
+  .tab-btn.active {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+  }
+
+  .tab-icon { font-size: 0.9rem; }
+
+  /* ── CONTENT ── */
+  .content { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .panel {
+    background: var(--dark2);
+    border: 1px solid var(--border);
+    display: none;
+  }
+
+  .panel.active { display: block; }
+
+  .panel-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.1em;
+    color: var(--white);
+  }
+
+  .panel-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* search bar */
+  .search-wrap {
+    display: flex;
+    gap: 8px;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--dark3);
+  }
+
+  .search-input {
+    flex: 1;
+    background: var(--dark);
+    border: 1px solid var(--border);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .search-input:focus { border-color: var(--red); }
+  .search-input::placeholder { color: var(--muted); }
+
+  .search-btn {
+    background: var(--red);
+    border: none;
+    color: #fff;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    padding: 8px 18px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: opacity 0.15s;
+  }
+
+  .search-btn:hover { opacity: 0.85; }
+
+  /* table */
+  .table-wrap { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+
+  thead tr {
+    background: var(--dark3);
+    border-bottom: 2px solid var(--border);
+  }
+
+  th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 10px 14px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  tr:hover td { background: var(--dark3); }
+
+  .mono { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; }
+
+  /* pills */
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .pill-red    { background: rgba(230,57,70,0.18); color: #ff6b78; border: 1px solid rgba(230,57,70,0.4); }
+  .pill-amber  { background: rgba(244,162,97,0.15); color: #f4a261; border: 1px solid rgba(244,162,97,0.35); }
+  .pill-green  { background: rgba(42,157,143,0.15); color: #2a9d8f; border: 1px solid rgba(42,157,143,0.35); }
+  .pill-gray   { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .pill-blue   { background: rgba(90,150,230,0.15); color: #7eb3f5; border: 1px solid rgba(90,150,230,0.35); }
+
+  /* no results */
+  .no-results {
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+  }
+
+  /* schema view */
+  .schema-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+
+  .schema-card {
+    background: var(--dark3);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--amber);
+  }
+
+  .schema-card-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--amber);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 0.08em;
+  }
+
+  .schema-field {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.75rem;
+  }
+
+  .schema-field:last-child { border-bottom: none; }
+  .field-name { color: var(--text); font-family: 'IBM Plex Mono', monospace; }
+  .field-type { color: var(--muted); font-size: 0.7rem; }
+  .field-pk   { color: var(--amber); }
+  .field-fk   { color: var(--green); }
+
+  /* queries panel */
+  .query-list { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+
+  .query-card {
+    background: var(--dark3);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    overflow: hidden;
+  }
+
+  .query-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .query-header:hover { background: var(--dark4); }
+
+  .query-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    color: var(--green);
+    min-width: 28px;
+  }
+
+  .query-name { font-size: 0.85rem; color: var(--white); font-weight: 500; flex: 1; }
+  .query-concept { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); }
+  .query-arrow { color: var(--muted); font-size: 0.8rem; transition: transform 0.2s; }
+  .query-card.open .query-arrow { transform: rotate(90deg); }
+
+  .query-body {
+    display: none;
+    padding: 0 16px 16px;
+  }
+
+  .query-card.open .query-body { display: block; }
+
+  pre {
+    background: var(--dark);
+    border: 1px solid var(--border);
+    padding: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: #a8d8a0;
+    overflow-x: auto;
+    line-height: 1.7;
+    white-space: pre;
+  }
+
+  /* about panel */
+  .about-body { padding: 2rem 1.5rem; }
+
+  .about-section { margin-bottom: 2rem; }
+
+  .about-section h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.1em;
+    color: var(--amber);
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+
+  .about-section p { color: var(--text); font-size: 0.85rem; line-height: 1.8; margin-bottom: 0.5rem; }
+
+  .team-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 0.5rem; }
+
+  .team-card {
+    background: var(--dark3);
+    border: 1px solid var(--border);
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .team-avatar {
+    width: 36px; height: 36px;
+    background: var(--red);
+    border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .team-name { font-size: 0.8rem; color: var(--white); font-weight: 500; }
+  .team-role { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); }
+
+  .rel-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  .rel-table th { background: var(--dark3); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  .rel-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .rel-table tr:last-child td { border-bottom: none; }
+
+  /* footer */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 1.2rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    background: var(--dark2);
+    margin-top: 2rem;
+  }
+
+  footer span { color: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <span>CR</span>MS <div class="badge">LIVE</div>
+  </div>
+  <div class="header-meta">
+    Criminal Record Management System<br>
+    NIE Mysuru · IS&amp;E Dept · Batch B1
+  </div>
+</header>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    ⚠ WANTED: Jesse Pinkman — Last seen screaming "Yeah Science!" in Vijayanagar &nbsp;&nbsp;|&nbsp;&nbsp;
+    🔴 ALERT: Walter White — Operating meth lab inside KSRTC bus (Bus No. KA-09-F-1959) &nbsp;&nbsp;|&nbsp;&nbsp;
+    🔍 INVESTIGATION ONGOING: Gustavo Fring — Los Pollos Hermanos Koramangala &nbsp;&nbsp;|&nbsp;&nbsp;
+    ⚖ CASE FILED: Saul Goodman — Criminal Lawyer (emphasis on Criminal) &nbsp;&nbsp;|&nbsp;&nbsp;
+    🚨 ROAD RAGE: Gregor Clegane — 3 victims on NICE Road, suspect described as "very large" &nbsp;&nbsp;|&nbsp;&nbsp;
+    🔔 BELL CODE CRACKED: Hector Salamanca arrest confirmed · Hubballi APMC Yard &nbsp;&nbsp;|&nbsp;&nbsp;
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="sidebar-section">
+      <div class="sidebar-title">// System Stats</div>
+      <div class="stat-row"><span class="stat-label">Police Stations</span><span class="stat-value">10</span></div>
+      <div class="stat-row"><span class="stat-label">Officers</span><span class="stat-value">15</span></div>
+      <div class="stat-row"><span class="stat-label">Criminals</span><span class="stat-value">20</span></div>
+      <div class="stat-row"><span class="stat-label">Crimes</span><span class="stat-value">25</span></div>
+      <div class="stat-row"><span class="stat-label">Cases</span><span class="stat-value">20</span></div>
+      <div class="stat-row"><span class="stat-label">Evidence Items</span><span class="stat-value">20</span></div>
+      <div class="stat-row"><span class="stat-label">Wanted</span><span class="stat-value red">6</span></div>
+      <div class="stat-row"><span class="stat-label">Arrested</span><span class="stat-value amber">9</span></div>
+      <div class="stat-row"><span class="stat-label">Released</span><span class="stat-value green">5</span></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">// Crime Severity</div>
+      <div class="sev-bar">
+        <div class="sev-row">
+          <span class="sev-label">Critical</span>
+          <div class="sev-track"><div class="sev-fill" style="width:40%;background:var(--red)"></div></div>
+          <span class="sev-count">8</span>
+        </div>
+        <div class="sev-row">
+          <span class="sev-label">High</span>
+          <div class="sev-track"><div class="sev-fill" style="width:35%;background:var(--amber)"></div></div>
+          <span class="sev-count">9</span>
+        </div>
+        <div class="sev-row">
+          <span class="sev-label">Medium</span>
+          <div class="sev-track"><div class="sev-fill" style="width:20%;background:#7eb3f5"></div></div>
+          <span class="sev-count">5</span>
+        </div>
+        <div class="sev-row">
+          <span class="sev-label">Low</span>
+          <div class="sev-track"><div class="sev-fill" style="width:12%;background:var(--green)"></div></div>
+          <span class="sev-count">3</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">// Navigation</div>
+      <nav class="tabs">
+        <button class="tab-btn active" onclick="showTab('criminals')"><span class="tab-icon">👤</span> CRIMINALS</button>
+        <button class="tab-btn" onclick="showTab('crimes')"><span class="tab-icon">🔪</span> CRIMES</button>
+        <button class="tab-btn" onclick="showTab('cases')"><span class="tab-icon">📁</span> CASES</button>
+        <button class="tab-btn" onclick="showTab('officers')"><span class="tab-icon">🛡</span> OFFICERS</button>
+        <button class="tab-btn" onclick="showTab('schema')"><span class="tab-icon">🗄</span> SCHEMA</button>
+        <button class="tab-btn" onclick="showTab('queries')"><span class="tab-icon">💻</span> QUERIES</button>
+        <button class="tab-btn" onclick="showTab('about')"><span class="tab-icon">ℹ</span> ABOUT</button>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- CONTENT PANELS -->
+  <div class="content">
+
+    <!-- CRIMINALS -->
+    <div class="panel active" id="panel-criminals">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Criminal Registry</div>
+          <div class="panel-sub">// 20 records · Breaking Bad × GoT Universe</div>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <input class="search-input" type="text" placeholder="Search by name, nationality, status..." oninput="filterTable('criminals-table', this.value)"/>
+        <button class="search-btn">SEARCH</button>
+      </div>
+      <div class="table-wrap">
+        <table id="criminals-table">
+          <thead><tr>
+            <th>#</th><th>Full Name</th><th>D.O.B</th><th>Gender</th>
+            <th>Nationality</th><th>Last Known Address</th><th>Status</th>
+          </tr></thead>
+          <tbody>
+            <tr><td class="mono">001</td><td>Walter White</td><td class="mono">1959-09-07</td><td>M</td><td>American</td><td>308, Negra Arroyo Lane, Devaraja Market, Mysuru</td><td><span class="pill pill-amber">Arrested</span></td></tr>
+            <tr><td class="mono">002</td><td>Jesse Pinkman</td><td class="mono">1984-09-24</td><td>M</td><td>American</td><td>9809, Margo Street, Vijayanagar 2nd Stage, Mysuru</td><td><span class="pill pill-red">Wanted</span></td></tr>
+            <tr><td class="mono">003</td><td>Gustavo Fring</td><td class="mono">1958-11-17</td><td>M</td><td>Chilean</td><td>Los Pollos Outlet, Koramangala 4th Block, Bengaluru</td><td><span class="pill pill-green">Released</span></td></tr>
+            <tr><td class="mono">004</td><td>Saul Goodman</td><td class="mono">1960-11-12</td><td>M</td><td>American</td><td>Wexler-McGill Bldg, MG Road, Mangaluru</td><td><span class="pill pill-amber">Arrested</span></td></tr>
+            <tr><td class="mono">005</td><td>Skyler White</td><td class="mono">1970-08-11</td><td>F</td><td>American</td><td>308, Negra Arroyo Lane, Devaraja Market, Mysuru</td><td><span class="pill pill-red">Wanted</span></td></tr>
+            <tr><td class="mono">006</td><td>Hector Salamanca</td><td class="mono">1940-01-01</td><td>M</td><td>Mexican</td><td>Salamanca Compound, Near APMC Yard, Hubballi</td><td><span class="pill pill-amber">Arrested</span></td></tr>
+            <tr><td class="mono">007</td><td>Tuco Salamanca</td><td class="mono">1975-05-05</td><td>M</td><td>Mexican</td><td>Salamanca Compound, Near APMC Yard, Hubballi</td><td><span class="pill pill-amber">Arrested</span></td></tr>
+            <tr><td class="mono">008</td><td>Mike Ehrmantraut</td><td class="mono">1945-04-03</td><td>M</td><td>American</td><td>Quiet Corner, Jayanagar 9th Block, Bengaluru</td><td><span class="pill pill-green">Released</span></td></tr>
+            <tr><td class="mono">009</td><td>Todd Alquist</td><td class="mono">1990-08-20</td><td>M</td><td>American</td><td>Aryan Brotherhood Chawl, Yelahanka, Bengaluru</td><td><span class="pill pill-amber">Arrested</span></td></tr>
+            <tr><td class="mono">010</td><td>Lydia Rodarte-Quayle</td><td class="mono">1977-03-22</td><td>F</td><td>American</td><td>Madrigal Electromotive Office, Whitefield, Bengaluru</td><td><span class="pill pill-red">Wanted</span></td></tr>
+            <tr><td class="mono">011</td><td>Joffrey Baratheon</td><td class="mono">1987-05-01</td><td>M</td><td>Westerosi</td><td>Red Keep Apartments, Brigade Road, Bengaluru</td><td><span class="pill pill-amber">Arrested</span></td></tr>
+            <tr><td class="mono">012</td><td>Cersei Lannister</td><td class="mono">1973-10-15</td><td>F</td><td>Westerosi</td><td>Red Keep Apartments, Brigade Road, Bengaluru</td><td><span class="pill pill-red">Wanted</span></td></tr>
+            <tr><td class="mono">013</td><td>Petyr Baelish</td><td class="mono">1970-07-07</td><td>M</td><td>Westerosi</td><td>Littlefinger Enterprises, Commercial Street, Bengaluru</td><td><span class="pill pill-red">Wanted</span></td></tr>
+            <tr><td class="mono">014</td><td>Ramsay Bolton</td><td class="mono">1989-03-20</td><td>M</td><td>Westerosi</td><td>Dreadfort Layout, Rajajinagar, Bengaluru</td><td><span class="pill pill-amber">Arrested</span></td></tr>
+            <tr><td class="mono">015</td><td>Theon Greyjoy</td><td class="mono">1988-11-10</td><td>M</td><td>Westerosi</td><td>Iron Islands Hostel, Old Port Road, Mangaluru</td><td><span class="pill pill-green">Released</span></td></tr>
+            <tr><td class="mono">016</td><td>Gregor Clegane</td><td class="mono">1975-06-25</td><td>M</td><td>Westerosi</td><td>Mountain Quarters, Anekal, Bengaluru</td><td><span class="pill pill-amber">Arrested</span></td></tr>
+            <tr><td class="mono">017</td><td>Euron Greyjoy</td><td class="mono">1969-08-14</td><td>M</td><td>Westerosi</td><td>Iron Islands Hostel, Old Port Road, Mangaluru</td><td><span class="pill pill-red">Wanted</span></td></tr>
+            <tr><td class="mono">018</td><td>Tywin Lannister</td><td class="mono">1943-11-06</td><td>M</td><td>Westerosi</td><td>Lannister Towers, Lavelle Road, Bengaluru</td><td><span class="pill pill-green">Released</span></td></tr>
+            <tr><td class="mono">019</td><td>Viserys Targaryen</td><td class="mono">1983-06-01</td><td>M</td><td>Westerosi</td><td>Vaes Dothrak PG, Hubballi Bus Stand, Hubballi</td><td><span class="pill pill-amber">Arrested</span></td></tr>
+            <tr><td class="mono">020</td><td>Jaqen H'ghar</td><td class="mono">1978-01-01</td><td>M</td><td>Unknown</td><td>House of Black and White, Russell Market, Bengaluru</td><td><span class="pill pill-red">Wanted</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CRIMES -->
+    <div class="panel" id="panel-crimes">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Crime Registry</div>
+          <div class="panel-sub">// 25 records · Common crimes + Series crimes</div>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <input class="search-input" type="text" placeholder="Search by type, location, severity..." oninput="filterTable('crimes-table', this.value)"/>
+        <button class="search-btn">SEARCH</button>
+      </div>
+      <div class="table-wrap">
+        <table id="crimes-table">
+          <thead><tr><th>#</th><th>Type</th><th>Description</th><th>Date</th><th>Location</th><th>Severity</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">001</td><td>Theft</td><td>Mobile phone snatched near Devaraja Market bus stand</td><td class="mono">2024-01-05</td><td>Devaraja Market, Mysuru</td><td><span class="pill pill-green">Low</span></td></tr>
+            <tr><td class="mono">002</td><td>Burglary</td><td>House broken into; TV, jewellery &amp; pressure cooker stolen</td><td class="mono">2024-01-18</td><td>Vijayanagar 3rd Stage, Mysuru</td><td><span class="pill pill-blue">Medium</span></td></tr>
+            <tr><td class="mono">003</td><td>Vehicle Theft</td><td>Honda Activa stolen from Mysuru railway station parking</td><td class="mono">2024-01-22</td><td>Mysuru Railway Station</td><td><span class="pill pill-blue">Medium</span></td></tr>
+            <tr><td class="mono">004</td><td>Assault</td><td>Neighbours came to blows over a parking dispute</td><td class="mono">2024-02-03</td><td>Hebbal Layout, Mysuru</td><td><span class="pill pill-blue">Medium</span></td></tr>
+            <tr><td class="mono">005</td><td>Domestic Violence</td><td>Repeated physical and verbal abuse of spouse</td><td class="mono">2024-02-10</td><td>Kuvempunagar, Mysuru</td><td><span class="pill pill-amber">High</span></td></tr>
+            <tr><td class="mono">006</td><td>Drunk Driving</td><td>Drove Innova at 120 kmph at 2 AM; BAC 287 mg/100 ml</td><td class="mono">2024-02-20</td><td>Hunsur Road, Mysuru</td><td><span class="pill pill-blue">Medium</span></td></tr>
+            <tr><td class="mono">007</td><td>Cheating / Fraud</td><td>Fake job offers to 30 youth; ₹25,000 each collected</td><td class="mono">2024-03-01</td><td>Vijayanagar 4th Stage, Mysuru</td><td><span class="pill pill-amber">High</span></td></tr>
+            <tr><td class="mono">008</td><td>Cybercrime</td><td>Fake RBI officer call; victim transferred ₹4.8 lakh</td><td class="mono">2024-03-12</td><td>Gokulam, Mysuru</td><td><span class="pill pill-amber">High</span></td></tr>
+            <tr><td class="mono">009</td><td>Robbery</td><td>Armed bike-borne duo snatched gold chain from customer</td><td class="mono">2024-03-25</td><td>Sayyaji Rao Road, Mysuru</td><td><span class="pill pill-amber">High</span></td></tr>
+            <tr><td class="mono">010</td><td>Hit and Run</td><td>Speeding car knocked down pedestrian near school zone and fled</td><td class="mono">2024-04-02</td><td>Nazarbad, Mysuru</td><td><span class="pill pill-amber">High</span></td></tr>
+            <tr><td class="mono">011</td><td>Trespassing</td><td>Broke into neighbour's house repeatedly to steal WiFi password</td><td class="mono">2024-04-08</td><td>Jayalakshmipuram, Mysuru</td><td><span class="pill pill-green">Low</span></td></tr>
+            <tr><td class="mono">012</td><td>Public Nuisance</td><td>Music at 114 dB past midnight; 14 complaints filed</td><td class="mono">2024-04-14</td><td>Srirampura, Mysuru</td><td><span class="pill pill-green">Low</span></td></tr>
+            <tr><td class="mono">013</td><td>Drug Manufacturing</td><td>Walter White's meth lab found inside a KSRTC bus</td><td class="mono">2024-01-10</td><td>Devaraja Market Bus Stand, Mysuru</td><td><span class="pill pill-red">Critical</span></td></tr>
+            <tr><td class="mono">014</td><td>Drug Possession</td><td>Jesse Pinkman: blue crystals labelled "Rock Candy — Not Meth"</td><td class="mono">2024-02-14</td><td>Vijayanagar 4th Stage, Mysuru</td><td><span class="pill pill-amber">High</span></td></tr>
+            <tr><td class="mono">015</td><td>Money Laundering</td><td>Gus Fring: ₹47 crore hidden in chicken delivery invoices</td><td class="mono">2024-03-05</td><td>Koramangala, Bengaluru</td><td><span class="pill pill-red">Critical</span></td></tr>
+            <tr><td class="mono">016</td><td>Fraud</td><td>Saul Goodman: legal advice to 60 clients from a food court</td><td class="mono">2024-04-20</td><td>Balmatta Road, Mangaluru</td><td><span class="pill pill-blue">Medium</span></td></tr>
+            <tr><td class="mono">017</td><td>Financial Fraud</td><td>Skyler White's A1A Car Wash laundering ₹12 crore in cash</td><td class="mono">2024-05-01</td><td>Station Road, Hubballi</td><td><span class="pill pill-amber">High</span></td></tr>
+            <tr><td class="mono">018</td><td>Drug Trafficking</td><td>Salamanca cartel; Hector communicated via bell (40 mins/order)</td><td class="mono">2024-05-10</td><td>APMC Yard, Hubballi</td><td><span class="pill pill-red">Critical</span></td></tr>
+            <tr><td class="mono">019</td><td>Contract Killing</td><td>Mike Ehrmantraut: 3 victims; only evidence = one sunflower seed</td><td class="mono">2024-05-18</td><td>Jayanagar, Bengaluru</td><td><span class="pill pill-red">Critical</span></td></tr>
+            <tr><td class="mono">020</td><td>Obstruction of Justice</td><td>Todd Alquist deleted CCTV footage; offered biscuits to officers</td><td class="mono">2024-06-01</td><td>Yelahanka, Bengaluru</td><td><span class="pill pill-amber">High</span></td></tr>
+            <tr><td class="mono">021</td><td>Assault</td><td>Joffrey assaulted vendor; arrested crowd for "witnessing embarrassment"</td><td class="mono">2024-06-10</td><td>Brigade Road, Bengaluru</td><td><span class="pill pill-amber">High</span></td></tr>
+            <tr><td class="mono">022</td><td>Extortion</td><td>Petyr Baelish: real estate extortion racket targeting merchants &amp; nobles</td><td class="mono">2024-06-20</td><td>Commercial Street, Bengaluru</td><td><span class="pill pill-red">Critical</span></td></tr>
+            <tr><td class="mono">023</td><td>Kidnapping</td><td>Ramsay Bolton held victim in Rajajinagar farmhouse for 3 weeks</td><td class="mono">2024-07-01</td><td>Rajajinagar, Bengaluru</td><td><span class="pill pill-red">Critical</span></td></tr>
+            <tr><td class="mono">024</td><td>Arms Smuggling</td><td>Euron Greyjoy: weapons hidden under 400 kg of dried fish</td><td class="mono">2024-07-10</td><td>Old Port Road, Mangaluru</td><td><span class="pill pill-red">Critical</span></td></tr>
+            <tr><td class="mono">025</td><td>Murder</td><td>Gregor Clegane: 3 victims in NICE Road road rage; accused described as "very large"</td><td class="mono">2024-07-20</td><td>NICE Road, Bengaluru</td><td><span class="pill pill-red">Critical</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CASES -->
+    <div class="panel" id="panel-cases">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Case Files</div>
+          <div class="panel-sub">// 20 active &amp; closed cases</div>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <input class="search-input" type="text" placeholder="Search by case title or status..." oninput="filterTable('cases-table', this.value)"/>
+        <button class="search-btn">SEARCH</button>
+      </div>
+      <div class="table-wrap">
+        <table id="cases-table">
+          <thead><tr><th>#</th><th>Case Title</th><th>Status</th><th>Date Filed</th><th>Officer ID</th><th>Station ID</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">01</td><td>Devaraja Mobile Snatching — State vs Jesse Pinkman</td><td><span class="pill pill-green">Closed</span></td><td class="mono">2024-01-06</td><td class="mono">01</td><td class="mono">01</td></tr>
+            <tr><td class="mono">02</td><td>Vijayanagar House Burglary — Unknown Accused</td><td><span class="pill pill-blue">Open</span></td><td class="mono">2024-01-19</td><td class="mono">02</td><td class="mono">02</td></tr>
+            <tr><td class="mono">03</td><td>Mysuru Railway Station Vehicle Theft</td><td><span class="pill pill-amber">Under Investigation</span></td><td class="mono">2024-01-23</td><td class="mono">07</td><td class="mono">02</td></tr>
+            <tr><td class="mono">04</td><td>Hebbal Parking Dispute Assault</td><td><span class="pill pill-green">Closed</span></td><td class="mono">2024-02-04</td><td class="mono">05</td><td class="mono">10</td></tr>
+            <tr><td class="mono">05</td><td>Kuvempunagar Domestic Violence — State vs Viserys Targaryen</td><td><span class="pill pill-amber">Under Investigation</span></td><td class="mono">2024-02-11</td><td class="mono">01</td><td class="mono">01</td></tr>
+            <tr><td class="mono">06</td><td>Hunsur Road Drunk Driving — State vs Tuco Salamanca</td><td><span class="pill pill-green">Closed</span></td><td class="mono">2024-02-21</td><td class="mono">06</td><td class="mono">06</td></tr>
+            <tr><td class="mono">07</td><td>Fake Job Fraud — State vs Petyr Baelish</td><td><span class="pill pill-amber">Under Investigation</span></td><td class="mono">2024-03-02</td><td class="mono">15</td><td class="mono">07</td></tr>
+            <tr><td class="mono">08</td><td>Gokulam KYC Scam — State vs Lydia Rodarte-Quayle</td><td><span class="pill pill-blue">Open</span></td><td class="mono">2024-03-13</td><td class="mono">15</td><td class="mono">07</td></tr>
+            <tr><td class="mono">09</td><td>Sayyaji Rao Gold Chain Robbery — State vs Tuco Salamanca</td><td><span class="pill pill-green">Closed</span></td><td class="mono">2024-03-26</td><td class="mono">04</td><td class="mono">04</td></tr>
+            <tr><td class="mono">10</td><td>Nazarbad Hit and Run — Unknown Accused</td><td><span class="pill pill-amber">Under Investigation</span></td><td class="mono">2024-04-03</td><td class="mono">09</td><td class="mono">04</td></tr>
+            <tr><td class="mono">11</td><td>Jayalakshmipuram Trespassing — State vs Theon Greyjoy</td><td><span class="pill pill-green">Closed</span></td><td class="mono">2024-04-09</td><td class="mono">02</td><td class="mono">02</td></tr>
+            <tr><td class="mono">12</td><td>Srirampura Noise Nuisance — State vs Joffrey Baratheon</td><td><span class="pill pill-green">Closed</span></td><td class="mono">2024-04-15</td><td class="mono">14</td><td class="mono">02</td></tr>
+            <tr><td class="mono">13</td><td>State vs Walter White — The One Who Cooks</td><td><span class="pill pill-green">Closed</span></td><td class="mono">2024-01-11</td><td class="mono">01</td><td class="mono">01</td></tr>
+            <tr><td class="mono">14</td><td>State vs Jesse Pinkman — Rock Candy Menace</td><td><span class="pill pill-amber">Under Investigation</span></td><td class="mono">2024-02-15</td><td class="mono">02</td><td class="mono">02</td></tr>
+            <tr><td class="mono">15</td><td>State vs Gustavo Fring — The Chicken &amp; The Crores</td><td><span class="pill pill-blue">Open</span></td><td class="mono">2024-03-06</td><td class="mono">03</td><td class="mono">03</td></tr>
+            <tr><td class="mono">16</td><td>State vs Saul Goodman — Better Call Someone Else</td><td><span class="pill pill-amber">Under Investigation</span></td><td class="mono">2024-04-21</td><td class="mono">04</td><td class="mono">04</td></tr>
+            <tr><td class="mono">17</td><td>State vs Skyler White — A1A Dirty Money Car Wash</td><td><span class="pill pill-green">Closed</span></td><td class="mono">2024-05-02</td><td class="mono">05</td><td class="mono">05</td></tr>
+            <tr><td class="mono">18</td><td>State vs Hector &amp; Tuco Salamanca — Bell Tower Cartel</td><td><span class="pill pill-amber">Under Investigation</span></td><td class="mono">2024-05-11</td><td class="mono">08</td><td class="mono">10</td></tr>
+            <tr><td class="mono">19</td><td>State vs Mike Ehrmantraut — The Sunflower Seed Case</td><td><span class="pill pill-blue">Open</span></td><td class="mono">2024-05-19</td><td class="mono">11</td><td class="mono">08</td></tr>
+            <tr><td class="mono">20</td><td>State vs Ramsay Bolton — Rajajinagar Farmhouse Horror</td><td><span class="pill pill-amber">Under Investigation</span></td><td class="mono">2024-07-02</td><td class="mono">11</td><td class="mono">08</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- OFFICERS -->
+    <div class="panel" id="panel-officers">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Police Officers</div>
+          <div class="panel-sub">// 15 officers · Game of Thrones Karnataka Police Force</div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Rank</th><th>Badge No</th><th>Station ID</th><th>Email</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">01</td><td>Jon Snow</td><td>Inspector</td><td class="mono">KA-MYS-001</td><td class="mono">1</td><td class="mono">jon.snow@ksp.gov.in</td></tr>
+            <tr><td class="mono">02</td><td>Arya Stark</td><td>Sub-Inspector</td><td class="mono">KA-MYS-002</td><td class="mono">2</td><td class="mono">arya.stark@ksp.gov.in</td></tr>
+            <tr><td class="mono">03</td><td>Tyrion Lannister</td><td>Deputy Inspector</td><td class="mono">KA-BLR-003</td><td class="mono">3</td><td class="mono">tyrion.lannister@ksp.gov.in</td></tr>
+            <tr><td class="mono">04</td><td>Cersei Lannister</td><td>Inspector</td><td class="mono">KA-MNG-004</td><td class="mono">4</td><td class="mono">cersei.lannister@ksp.gov.in</td></tr>
+            <tr><td class="mono">05</td><td>Samwell Tarly</td><td>Head Constable</td><td class="mono">KA-HBL-005</td><td class="mono">5</td><td class="mono">samwell.tarly@ksp.gov.in</td></tr>
+            <tr><td class="mono">06</td><td>Ned Stark</td><td>Superintendent</td><td class="mono">KA-MYS-006</td><td class="mono">1</td><td class="mono">ned.stark@ksp.gov.in</td></tr>
+            <tr><td class="mono">07</td><td>Sansa Stark</td><td>Sub-Inspector</td><td class="mono">KA-MYS-007</td><td class="mono">2</td><td class="mono">sansa.stark@ksp.gov.in</td></tr>
+            <tr><td class="mono">08</td><td>The Hound</td><td>Head Constable</td><td class="mono">KA-BLR-008</td><td class="mono">8</td><td class="mono">sandor.clegane@ksp.gov.in</td></tr>
+            <tr><td class="mono">09</td><td>Brienne Tarth</td><td>Inspector</td><td class="mono">KA-MNG-009</td><td class="mono">4</td><td class="mono">brienne.tarth@ksp.gov.in</td></tr>
+            <tr><td class="mono">10</td><td>Davos Seaworth</td><td>Sub-Inspector</td><td class="mono">KA-HBL-010</td><td class="mono">6</td><td class="mono">davos.seaworth@ksp.gov.in</td></tr>
+            <tr><td class="mono">11</td><td>Jaime Lannister</td><td>Deputy Inspector</td><td class="mono">KA-BLR-011</td><td class="mono">8</td><td class="mono">jaime.lannister@ksp.gov.in</td></tr>
+            <tr><td class="mono">12</td><td>Olenna Tyrell</td><td>Superintendent</td><td class="mono">KA-MNG-012</td><td class="mono">4</td><td class="mono">olenna.tyrell@ksp.gov.in</td></tr>
+            <tr><td class="mono">13</td><td>Bronn</td><td>Head Constable</td><td class="mono">KA-BLR-013</td><td class="mono">3</td><td class="mono">bronn.of.blackwater@ksp.gov.in</td></tr>
+            <tr><td class="mono">14</td><td>Missandei</td><td>Sub-Inspector</td><td class="mono">KA-MYS-014</td><td class="mono">2</td><td class="mono">missandei@ksp.gov.in</td></tr>
+            <tr><td class="mono">15</td><td>Varys</td><td>Intelligence Officer</td><td class="mono">KA-BLR-015</td><td class="mono">7</td><td class="mono">lord.varys@ksp.gov.in</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SCHEMA -->
+    <div class="panel" id="panel-schema">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Database Schema</div>
+          <div class="panel-sub">// 8 tables · MySQL · 3NF Normalised</div>
+        </div>
+      </div>
+      <div class="schema-grid">
+        <div class="schema-card">
+          <div class="schema-card-title">POLICE_STATION</div>
+          <div class="schema-field"><span class="field-name field-pk">station_id</span><span class="field-type">INT · PK · AI</span></div>
+          <div class="schema-field"><span class="field-name">name</span><span class="field-type">VARCHAR · NN</span></div>
+          <div class="schema-field"><span class="field-name">address</span><span class="field-type">VARCHAR · NN</span></div>
+          <div class="schema-field"><span class="field-name">city</span><span class="field-type">VARCHAR · NN</span></div>
+          <div class="schema-field"><span class="field-name">contact_no</span><span class="field-type">VARCHAR</span></div>
+          <div class="schema-field"><span class="field-name">jurisdiction</span><span class="field-type">VARCHAR</span></div>
+        </div>
+        <div class="schema-card">
+          <div class="schema-card-title">POLICE_OFFICER</div>
+          <div class="schema-field"><span class="field-name field-pk">officer_id</span><span class="field-type">INT · PK · AI</span></div>
+          <div class="schema-field"><span class="field-name">name</span><span class="field-type">VARCHAR · NN</span></div>
+          <div class="schema-field"><span class="field-name">rank</span><span class="field-type">VARCHAR · NN</span></div>
+          <div class="schema-field"><span class="field-name">badge_no</span><span class="field-type">VARCHAR · UNIQUE</span></div>
+          <div class="schema-field"><span class="field-name field-fk">station_id</span><span class="field-type">INT · FK → STATION</span></div>
+          <div class="schema-field"><span class="field-name">contact</span><span class="field-type">VARCHAR</span></div>
+          <div class="schema-field"><span class="field-name">email</span><span class="field-type">VARCHAR</span></div>
+        </div>
+        <div class="schema-card">
+          <div class="schema-card-title">CRIMINAL</div>
+          <div class="schema-field"><span class="field-name field-pk">criminal_id</span><span class="field-type">INT · PK · AI</span></div>
+          <div class="schema-field"><span class="field-name">first_name</span><span class="field-type">VARCHAR · NN</span></div>
+          <div class="schema-field"><span class="field-name">last_name</span><span class="field-type">VARCHAR · NN</span></div>
+          <div class="schema-field"><span class="field-name">dob</span><span class="field-type">DATE</span></div>
+          <div class="schema-field"><span class="field-name">gender</span><span class="field-type">CHAR(1)</span></div>
+          <div class="schema-field"><span class="field-name">address</span><span class="field-type">VARCHAR</span></div>
+          <div class="schema-field"><span class="field-name">nationality</span><span class="field-type">VARCHAR</span></div>
+          <div class="schema-field"><span class="field-name">status</span><span class="field-type">ENUM</span></div>
+        </div>
+        <div class="schema-card">
+          <div class="schema-card-title">CRIME</div>
+          <div class="schema-field"><span class="field-name field-pk">crime_id</span><span class="field-type">INT · PK · AI</span></div>
+          <div class="schema-field"><span class="field-name">crime_type</span><span class="field-type">VARCHAR · NN</span></div>
+          <div class="schema-field"><span class="field-name">description</span><span class="field-type">TEXT</span></div>
+          <div class="schema-field"><span class="field-name">date_occurred</span><span class="field-type">DATE · NN</span></div>
+          <div class="schema-field"><span class="field-name">location</span><span class="field-type">VARCHAR · NN</span></div>
+          <div class="schema-field"><span class="field-name">severity</span><span class="field-type">ENUM</span></div>
+        </div>
+        <div class="schema-card">
+          <div class="schema-card-title">CASE</div>
+          <div class="schema-field"><span class="field-name field-pk">case_id</span><span class="field-type">INT · PK · AI</span></div>
+          <div class="schema-field"><span class="field-name">case_title</span><span class="field-type">VARCHAR · NN</span></div>
+          <div class="schema-field"><span class="field-name">status</span><span class="field-type">ENUM · NN</span></div>
+          <div class="schema-field"><span class="field-name">date_filed</span><span class="field-type">DATE · NN</span></div>
+          <div class="schema-field"><span class="field-name field-fk">officer_id</span><span class="field-type">INT · FK → OFFICER</span></div>
+          <div class="schema-field"><span class="field-name field-fk">station_id</span><span class="field-type">INT · FK → STATION</span></div>
+        </div>
+        <div class="schema-card">
+          <div class="schema-card-title">EVIDENCE</div>
+          <div class="schema-field"><span class="field-name field-pk">evidence_id</span><span class="field-type">INT · PK · AI</span></div>
+          <div class="schema-field"><span class="field-name">evidence_type</span><span class="field-type">VARCHAR · NN</span></div>
+          <div class="schema-field"><span class="field-name">description</span><span class="field-type">TEXT</span></div>
+          <div class="schema-field"><span class="field-name">date_collected</span><span class="field-type">DATE</span></div>
+          <div class="schema-field"><span class="field-name field-fk">case_id</span><span class="field-type">INT · FK → CASE</span></div>
+          <div class="schema-field"><span class="field-name field-fk">officer_id</span><span class="field-type">INT · FK → OFFICER</span></div>
+        </div>
+        <div class="schema-card">
+          <div class="schema-card-title">CRIMINAL_CASE &nbsp;<span style="font-size:0.6rem;color:var(--muted)">Junction M:N</span></div>
+          <div class="schema-field"><span class="field-name field-fk">criminal_id</span><span class="field-type">INT · PK · FK → CRIMINAL</span></div>
+          <div class="schema-field"><span class="field-name field-fk">case_id</span><span class="field-type">INT · PK · FK → CASE</span></div>
+          <div class="schema-field"><span class="field-name">role</span><span class="field-type">VARCHAR</span></div>
+          <div class="schema-field"><span class="field-name">arrest_date</span><span class="field-type">DATE</span></div>
+        </div>
+        <div class="schema-card">
+          <div class="schema-card-title">CASE_CRIME &nbsp;<span style="font-size:0.6rem;color:var(--muted)">Junction M:N</span></div>
+          <div class="schema-field"><span class="field-name field-fk">case_id</span><span class="field-type">INT · PK · FK → CASE</span></div>
+          <div class="schema-field"><span class="field-name field-fk">crime_id</span><span class="field-type">INT · PK · FK → CRIME</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUERIES -->
+    <div class="panel" id="panel-queries">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">SQL Queries</div>
+          <div class="panel-sub">// 15 queries · Click any query to expand</div>
+        </div>
+      </div>
+      <div class="query-list">
+
+        <div class="query-card" onclick="toggleQuery(this)">
+          <div class="query-header"><span class="query-num">Q1</span><span class="query-name">List all criminals with their status</span><span class="query-concept">SELECT · ORDER BY</span><span class="query-arrow">▶</span></div>
+          <div class="query-body"><pre>SELECT
+    criminal_id,
+    CONCAT(first_name, ' ', last_name) AS full_name,
+    nationality,
+    status
+FROM CRIMINAL
+ORDER BY status, last_name;</pre></div>
+        </div>
+
+        <div class="query-card" onclick="toggleQuery(this)">
+          <div class="query-header"><span class="query-num">Q2</span><span class="query-name">List all WANTED criminals</span><span class="query-concept">WHERE filter</span><span class="query-arrow">▶</span></div>
+          <div class="query-body"><pre>SELECT
+    CONCAT(first_name, ' ', last_name) AS full_name,
+    address,
+    nationality
+FROM CRIMINAL
+WHERE status = 'Wanted';</pre></div>
+        </div>
+
+        <div class="query-card" onclick="toggleQuery(this)">
+          <div class="query-header"><span class="query-num">Q3</span><span class="query-name">Cases with investigating officer and station</span><span class="query-concept">3-table INNER JOIN</span><span class="query-arrow">▶</span></div>
+          <div class="query-body"><pre>SELECT
+    c.case_id, c.case_title, c.status AS case_status,
+    c.date_filed, po.name AS officer_name,
+    po.rank, ps.name AS station_name
+FROM `CASE` c
+INNER JOIN POLICE_OFFICER po ON c.officer_id = po.officer_id
+INNER JOIN POLICE_STATION ps ON c.station_id = ps.station_id
+ORDER BY c.date_filed;</pre></div>
+        </div>
+
+        <div class="query-card" onclick="toggleQuery(this)">
+          <div class="query-header"><span class="query-num">Q4</span><span class="query-name">All criminals linked to each case</span><span class="query-concept">Junction table JOIN</span><span class="query-arrow">▶</span></div>
+          <div class="query-body"><pre>SELECT
+    c.case_title,
+    CONCAT(cr.first_name, ' ', cr.last_name) AS criminal_name,
+    cr.status AS criminal_status, cc.role, cc.arrest_date
+FROM CRIMINAL_CASE cc
+INNER JOIN `CASE`   c  ON cc.case_id     = c.case_id
+INNER JOIN CRIMINAL cr ON cc.criminal_id = cr.criminal_id
+ORDER BY c.case_id, cc.role;</pre></div>
+        </div>
+
+        <div class="query-card" onclick="toggleQuery(this)">
+          <div class="query-header"><span class="query-num">Q5</span><span class="query-name">All crimes linked to each case</span><span class="query-concept">CASE_CRIME junction</span><span class="query-arrow">▶</span></div>
+          <div class="query-body"><pre>SELECT
+    c.case_title, cr.crime_type,
+    cr.severity, cr.date_occurred, cr.location
+FROM CASE_CRIME cc
+INNER JOIN `CASE` c  ON cc.case_id  = c.case_id
+INNER JOIN CRIME  cr ON cc.crime_id = cr.crime_id
+ORDER BY c.case_id;</pre></div>
+        </div>
+
+        <div class="query-card" onclick="toggleQuery(this)">
+          <div class="query-header"><span class="query-num">Q6</span><span class="query-name">Total cases handled per station</span><span class="query-concept">LEFT JOIN · GROUP BY · COUNT</span><span class="query-arrow">▶</span></div>
+          <div class="query-body"><pre>SELECT
+    ps.name AS station_name, ps.city,
+    COUNT(c.case_id) AS total_cases
+FROM POLICE_STATION ps
+LEFT JOIN `CASE` c ON ps.station_id = c.station_id
+GROUP BY ps.station_id, ps.name, ps.city
+ORDER BY total_cases DESC;</pre></div>
+        </div>
+
+        <div class="query-card" onclick="toggleQuery(this)">
+          <div class="query-header"><span class="query-num">Q7</span><span class="query-name">Evidence with case title and collecting officer</span><span class="query-concept">3-table JOIN</span><span class="query-arrow">▶</span></div>
+          <div class="query-body"><pre>SELECT
+    e.evidence_id, e.evidence_type, e.description,
+    e.date_collected, c.case_title, po.name AS collected_by
+FROM EVIDENCE e
+INNER JOIN `CASE`         c  ON e.case_id    = c.case_id
+INNER JOIN POLICE_OFFICER po ON e.officer_id = po.officer_id
+ORDER BY e.date_collected;</pre></div>
+        </div>
+
+        <div class="query-card" onclick="toggleQuery(this)">
+          <div class="query-header"><span class="query-num">Q8</span><span class="query-name">Count crimes by severity level</span><span class="query-concept">GROUP BY · ORDER BY FIELD</span><span class="query-arrow">▶</span></div>
+          <div class="query-body"><pre>SELECT severity, COUNT(*) AS total_crimes
+FROM CRIME
+GROUP BY severity
+ORDER BY FIELD(severity, 'Critical','High','Medium','Low');</pre></div>
+        </div>
+
+        <div class="query-card" onclick="toggleQuery(this)">
+          <div class="query-header"><span class="query-num">Q9</span><span class="query-name">Critical / High severity crimes with case status</span><span class="query-concept">WHERE IN · multi-JOIN</span><span class="query-arrow">▶</span></div>
+          <div class="query-body"><pre>SELECT
+    cr.crime_type, cr.severity, cr.location,
+    cr.date_occurred, c.case_title, c.status AS case_status
+FROM CRIME cr
+INNER JOIN CASE_CRIME cc ON cr.crime_id = cc.crime_id
+INNER JOIN `CASE`     c  ON cc.case_id  = c.case_id
+WHERE cr.severity IN ('Critical', 'High')
+ORDER BY cr.severity, cr.date_occurred;</pre></div>
+        </div>
+
+        <div class="query-card" onclick="toggleQuery(this)">
+          <div class="query-header"><span class="query-num">Q10</span><span class="query-name">Open / Under Investigation cases</span><span class="query-concept">WHERE IN filter</span><span class="query-arrow">▶</span></div>
+          <div class="query-body"><pre>SELECT
+    c.case_id, c.case_title, c.status, c.date_filed,
+    po.name AS officer_name, ps.name AS station_name
+FROM `CASE` c
+INNER JOIN POLICE_OFFICER po ON c.officer_id = po.officer_id
+INNER JOIN POLICE_STATION ps ON c.station_id = ps.station_id
+WHERE c.status IN ('Open', 'Under Investigation')
+ORDER BY c.status, c.date_filed;</pre></div>
+        </div>
+
+        <div class="query-card" onclick="toggleQuery(this)">
+          <div class="query-header"><span class="query-num">Q11</span><span class="query-name">Criminals involved in more than one case</span><span class="query-concept">GROUP BY · HAVING</span><span class="query-arrow">▶</span></div>
+          <div class="query-body"><pre>SELECT
+    CONCAT(cr.first_name,' ',cr.last_name) AS criminal_name,
+    cr.status, COUNT(cc.case_id) AS number_of_cases
+FROM CRIMINAL cr
+INNER JOIN CRIMINAL_CASE cc ON cr.criminal_id = cc.criminal_id
+GROUP BY  cr.criminal_id, cr.first_name, cr.last_name, cr.status
+HAVING    COUNT(cc.case_id) > 1
+ORDER BY  number_of_cases DESC;</pre></div>
+        </div>
+
+        <div class="query-card" onclick="toggleQuery(this)">
+          <div class="query-header"><span class="query-num">Q12</span><span class="query-name">Officers who handled Critical cases</span><span class="query-concept">Subquery · DISTINCT</span><span class="query-arrow">▶</span></div>
+          <div class="query-body"><pre>SELECT DISTINCT
+    po.officer_id, po.name AS officer_name,
+    po.rank, ps.name AS station_name
+FROM POLICE_OFFICER po
+INNER JOIN POLICE_STATION ps ON po.station_id = ps.station_id
+WHERE po.officer_id IN (
+    SELECT c.officer_id FROM `CASE` c
+    INNER JOIN CASE_CRIME cc ON c.case_id   = cc.case_id
+    INNER JOIN CRIME       cr ON cc.crime_id = cr.crime_id
+    WHERE cr.severity = 'Critical'
+);</pre></div>
+        </div>
+
+        <div class="query-card" onclick="toggleQuery(this)">
+          <div class="query-header"><span class="query-num">Q13</span><span class="query-name">Cases assigned per officer</span><span class="query-concept">LEFT JOIN · GROUP BY</span><span class="query-arrow">▶</span></div>
+          <div class="query-body"><pre>SELECT
+    po.name AS officer_name, po.rank,
+    ps.name AS station_name,
+    COUNT(c.case_id) AS cases_assigned
+FROM POLICE_OFFICER  po
+INNER JOIN POLICE_STATION ps ON po.station_id = ps.station_id
+LEFT  JOIN `CASE`         c  ON po.officer_id = c.officer_id
+GROUP BY  po.officer_id, po.name, po.rank, ps.name
+ORDER BY  cases_assigned DESC;</pre></div>
+        </div>
+
+        <div class="query-card" onclick="toggleQuery(this)">
+          <div class="query-header"><span class="query-num">Q14</span><span class="query-name">Full case report</span><span class="query-concept">6-table JOIN</span><span class="query-arrow">▶</span></div>
+          <div class="query-body"><pre>SELECT
+    c.case_title, c.status AS case_status,
+    po.name AS officer, ps.name AS station,
+    CONCAT(cr.first_name,' ',cr.last_name) AS criminal,
+    cc_link.role, crime.crime_type, crime.severity
+FROM `CASE` c
+INNER JOIN POLICE_OFFICER po      ON c.officer_id        = po.officer_id
+INNER JOIN POLICE_STATION ps      ON c.station_id        = ps.station_id
+INNER JOIN CRIMINAL_CASE  cc_link ON c.case_id           = cc_link.case_id
+INNER JOIN CRIMINAL       cr      ON cc_link.criminal_id = cr.criminal_id
+INNER JOIN CASE_CRIME     cc2     ON c.case_id           = cc2.case_id
+INNER JOIN CRIME          crime   ON cc2.crime_id        = crime.crime_id
+ORDER BY c.case_id, cr.last_name;</pre></div>
+        </div>
+
+        <div class="query-card" onclick="toggleQuery(this)">
+          <div class="query-header"><span class="query-num">Q15</span><span class="query-name">Cases with multiple accused</span><span class="query-concept">GROUP BY · HAVING · COUNT</span><span class="query-arrow">▶</span></div>
+          <div class="query-body"><pre>SELECT
+    c.case_title, c.status,
+    COUNT(cc.criminal_id) AS number_of_accused
+FROM `CASE` c
+INNER JOIN CRIMINAL_CASE cc ON c.case_id = cc.case_id
+GROUP BY   c.case_id, c.case_title, c.status
+HAVING     COUNT(cc.criminal_id) > 1
+ORDER BY   number_of_accused DESC;</pre></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ABOUT -->
+    <div class="panel" id="panel-about">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">About This Project</div>
+          <div class="panel-sub">// NIE Mysuru · DBMS Lab Project · 2024</div>
+        </div>
+      </div>
+      <div class="about-body">
+        <div class="about-section">
+          <h3>Project Overview</h3>
+          <p>The Criminal Record Management System (CRMS) is a relational database project built as part of the DBMS Lab at NIE Mysuru. It models a law enforcement database that tracks criminals, crimes, cases, evidence, and police personnel across Karnataka.</p>
+          <p>The system demonstrates core DBMS concepts including normalization (3NF), foreign key constraints, many-to-many junction tables, and complex multi-table SQL queries.</p>
+        </div>
+        <div class="about-section">
+          <h3>Team</h3>
+          <div class="team-grid">
+            <div class="team-card"><div class="team-avatar">KB</div><div><div class="team-name">Komal Bishnoi</div><div class="team-role">IS&amp;E · Batch B1</div></div></div>
+            <div class="team-card"><div class="team-avatar">KS</div><div><div class="team-name">Kumari Swati Mahato</div><div class="team-role">IS&amp;E · Batch B1</div></div></div>
+            <div class="team-card"><div class="team-avatar">KS</div><div><div class="team-name">Kushagra Sharma</div><div class="team-role">IS&amp;E · Batch B1</div></div></div>
+            <div class="team-card"><div class="team-avatar">LS</div><div><div class="team-name">Likith Singh S</div><div class="team-role">IS&amp;E · Batch B1</div></div></div>
+          </div>
+        </div>
+        <div class="about-section">
+          <h3>Guides</h3>
+          <p>Suhas Bharadwaj BR &amp; Prathibha BS — Department of Information Science &amp; Engineering, NIE Mysuru</p>
+        </div>
+        <div class="about-section">
+          <h3>Relationships in the Schema</h3>
+          <table class="rel-table">
+            <thead><tr><th>From</th><th>To</th><th>Type</th><th>Via</th></tr></thead>
+            <tbody>
+              <tr><td>POLICE_STATION</td><td>POLICE_OFFICER</td><td><span class="pill pill-blue">One-to-Many</span></td><td>station_id FK</td></tr>
+              <tr><td>POLICE_STATION</td><td>CASE</td><td><span class="pill pill-blue">One-to-Many</span></td><td>station_id FK</td></tr>
+              <tr><td>POLICE_OFFICER</td><td>CASE</td><td><span class="pill pill-blue">One-to-Many</span></td><td>officer_id FK</td></tr>
+              <tr><td>POLICE_OFFICER</td><td>EVIDENCE</td><td><span class="pill pill-blue">One-to-Many</span></td><td>officer_id FK</td></tr>
+              <tr><td>CASE</td><td>EVIDENCE</td><td><span class="pill pill-blue">One-to-Many</span></td><td>case_id FK</td></tr>
+              <tr><td>CRIMINAL ↔ CASE</td><td>CRIMINAL_CASE</td><td><span class="pill pill-red">Many-to-Many</span></td><td>Junction table</td></tr>
+              <tr><td>CASE ↔ CRIME</td><td>CASE_CRIME</td><td><span class="pill pill-red">Many-to-Many</span></td><td>Junction table</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="about-section">
+          <h3>Sample Data Theme</h3>
+          <p><strong style="color:var(--amber)">Criminals</strong> — Breaking Bad characters: Walter White, Jesse Pinkman, Gustavo Fring, Saul Goodman, Skyler White, the Salamancas, Mike Ehrmantraut, Todd Alquist, Lydia. GoT villains: Joffrey, Cersei, Petyr Baelish, Ramsay Bolton, Gregor Clegane, Euron Greyjoy.</p>
+          <p><strong style="color:var(--green)">Officers</strong> — Game of Thrones heroes as Karnataka cops: Jon Snow (Inspector), Arya Stark (SI), Tyrion Lannister (DI), Ned Stark (Superintendent), Brienne of Tarth, Davos Seaworth, Varys (Intelligence), and more.</p>
+          <p><strong style="color:var(--red)">Stations</strong> — Named after iconic show locations: The Wall Outpost, Winterfell PS, Los Pollos Hermanos Thana, The Red Keep Police Station, Vaes Dothrak Rural Outpost — all with real Karnataka addresses.</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end .content -->
+</main>
+
+<footer>
+  <div>CRMS · NIE Mysuru · IS&amp;E Dept · Batch B1 · 2024</div>
+  <div>"The queries are dark and full of errors." — <span>Jon Snow</span></div>
+  <div>MySQL · 8 Tables · 3NF</div>
+</footer>
+
+<script>
+  function showTab(name) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+
+  function toggleQuery(card) {
+    card.classList.toggle('open');
+  }
+
+  function filterTable(tableId, query) {
+    const q = query.toLowerCase();
+    const rows = document.querySelectorAll('#' + tableId + ' tbody tr');
+    rows.forEach(row => {
+      row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+</script>
+</body>
+</html>

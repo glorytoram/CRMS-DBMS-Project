@@ -329,6 +329,46 @@
   .pill-gray   { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
   .pill-blue   { background: rgba(90,150,230,0.15); color: #7eb3f5; border: 1px solid rgba(90,150,230,0.35); }
 
+  /* criminal expand rows */
+  .crim-row { cursor: pointer; }
+  .crim-row:hover td { background: var(--dark3); }
+  .crim-row.expanded td { background: var(--dark3); border-bottom: none; }
+  .crim-row td:nth-child(2)::after { content: ' ▶'; font-size: 0.6rem; color: var(--muted); margin-left: 4px; }
+  .crim-row.expanded td:nth-child(2)::after { content: ' ▼'; color: var(--red); }
+
+  .crim-detail { display: none; }
+  .crim-detail.open { display: table-row; }
+  .crim-detail td { padding: 0 0 12px 0; border-bottom: 1px solid var(--border); background: var(--dark3); }
+
+  .crim-detail-box {
+    border-left: 3px solid var(--red);
+    margin: 0 14px;
+    padding: 12px 14px;
+    background: var(--dark);
+  }
+
+  .cdet-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--amber);
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .cdet-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 0.78rem;
+  }
+
+  .cdet-item:last-child { margin-bottom: 0; }
+  .cdet-type { flex-shrink: 0; margin-top: 1px; }
+  .cdet-desc { color: var(--text); line-height: 1.6; }
+  .cdet-desc em { color: var(--muted); font-style: normal; }
+
   /* no results */
   .no-results {
     text-align: center;
@@ -595,29 +635,276 @@
         <table id="criminals-table">
           <thead><tr>
             <th>#</th><th>Full Name</th><th>D.O.B</th><th>Gender</th>
-            <th>Nationality</th><th>Last Known Address</th><th>Status</th>
+            <th>Nationality</th><th>Last Known Address</th><th>Crimes Committed</th><th>Status</th>
           </tr></thead>
           <tbody>
-            <tr><td class="mono">001</td><td>Walter White</td><td class="mono">1959-09-07</td><td>M</td><td>American</td><td>308, Negra Arroyo Lane, Devaraja Market, Mysuru</td><td><span class="pill pill-amber">Arrested</span></td></tr>
-            <tr><td class="mono">002</td><td>Jesse Pinkman</td><td class="mono">1984-09-24</td><td>M</td><td>American</td><td>9809, Margo Street, Vijayanagar 2nd Stage, Mysuru</td><td><span class="pill pill-red">Wanted</span></td></tr>
-            <tr><td class="mono">003</td><td>Gustavo Fring</td><td class="mono">1958-11-17</td><td>M</td><td>Chilean</td><td>Los Pollos Outlet, Koramangala 4th Block, Bengaluru</td><td><span class="pill pill-green">Released</span></td></tr>
-            <tr><td class="mono">004</td><td>Saul Goodman</td><td class="mono">1960-11-12</td><td>M</td><td>American</td><td>Wexler-McGill Bldg, MG Road, Mangaluru</td><td><span class="pill pill-amber">Arrested</span></td></tr>
-            <tr><td class="mono">005</td><td>Skyler White</td><td class="mono">1970-08-11</td><td>F</td><td>American</td><td>308, Negra Arroyo Lane, Devaraja Market, Mysuru</td><td><span class="pill pill-red">Wanted</span></td></tr>
-            <tr><td class="mono">006</td><td>Hector Salamanca</td><td class="mono">1940-01-01</td><td>M</td><td>Mexican</td><td>Salamanca Compound, Near APMC Yard, Hubballi</td><td><span class="pill pill-amber">Arrested</span></td></tr>
-            <tr><td class="mono">007</td><td>Tuco Salamanca</td><td class="mono">1975-05-05</td><td>M</td><td>Mexican</td><td>Salamanca Compound, Near APMC Yard, Hubballi</td><td><span class="pill pill-amber">Arrested</span></td></tr>
-            <tr><td class="mono">008</td><td>Mike Ehrmantraut</td><td class="mono">1945-04-03</td><td>M</td><td>American</td><td>Quiet Corner, Jayanagar 9th Block, Bengaluru</td><td><span class="pill pill-green">Released</span></td></tr>
-            <tr><td class="mono">009</td><td>Todd Alquist</td><td class="mono">1990-08-20</td><td>M</td><td>American</td><td>Aryan Brotherhood Chawl, Yelahanka, Bengaluru</td><td><span class="pill pill-amber">Arrested</span></td></tr>
-            <tr><td class="mono">010</td><td>Lydia Rodarte-Quayle</td><td class="mono">1977-03-22</td><td>F</td><td>American</td><td>Madrigal Electromotive Office, Whitefield, Bengaluru</td><td><span class="pill pill-red">Wanted</span></td></tr>
-            <tr><td class="mono">011</td><td>Joffrey Baratheon</td><td class="mono">1987-05-01</td><td>M</td><td>Westerosi</td><td>Red Keep Apartments, Brigade Road, Bengaluru</td><td><span class="pill pill-amber">Arrested</span></td></tr>
-            <tr><td class="mono">012</td><td>Cersei Lannister</td><td class="mono">1973-10-15</td><td>F</td><td>Westerosi</td><td>Red Keep Apartments, Brigade Road, Bengaluru</td><td><span class="pill pill-red">Wanted</span></td></tr>
-            <tr><td class="mono">013</td><td>Petyr Baelish</td><td class="mono">1970-07-07</td><td>M</td><td>Westerosi</td><td>Littlefinger Enterprises, Commercial Street, Bengaluru</td><td><span class="pill pill-red">Wanted</span></td></tr>
-            <tr><td class="mono">014</td><td>Ramsay Bolton</td><td class="mono">1989-03-20</td><td>M</td><td>Westerosi</td><td>Dreadfort Layout, Rajajinagar, Bengaluru</td><td><span class="pill pill-amber">Arrested</span></td></tr>
-            <tr><td class="mono">015</td><td>Theon Greyjoy</td><td class="mono">1988-11-10</td><td>M</td><td>Westerosi</td><td>Iron Islands Hostel, Old Port Road, Mangaluru</td><td><span class="pill pill-green">Released</span></td></tr>
-            <tr><td class="mono">016</td><td>Gregor Clegane</td><td class="mono">1975-06-25</td><td>M</td><td>Westerosi</td><td>Mountain Quarters, Anekal, Bengaluru</td><td><span class="pill pill-amber">Arrested</span></td></tr>
-            <tr><td class="mono">017</td><td>Euron Greyjoy</td><td class="mono">1969-08-14</td><td>M</td><td>Westerosi</td><td>Iron Islands Hostel, Old Port Road, Mangaluru</td><td><span class="pill pill-red">Wanted</span></td></tr>
-            <tr><td class="mono">018</td><td>Tywin Lannister</td><td class="mono">1943-11-06</td><td>M</td><td>Westerosi</td><td>Lannister Towers, Lavelle Road, Bengaluru</td><td><span class="pill pill-green">Released</span></td></tr>
-            <tr><td class="mono">019</td><td>Viserys Targaryen</td><td class="mono">1983-06-01</td><td>M</td><td>Westerosi</td><td>Vaes Dothrak PG, Hubballi Bus Stand, Hubballi</td><td><span class="pill pill-amber">Arrested</span></td></tr>
-            <tr><td class="mono">020</td><td>Jaqen H'ghar</td><td class="mono">1978-01-01</td><td>M</td><td>Unknown</td><td>House of Black and White, Russell Market, Bengaluru</td><td><span class="pill pill-red">Wanted</span></td></tr>
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">001</td><td>Walter White</td><td class="mono">1959-09-07</td><td>M</td><td>American</td>
+              <td>308, Negra Arroyo Lane, Devaraja Market, Mysuru</td>
+              <td><span class="pill pill-red">Drug Manufacturing</span> <span class="pill pill-amber">Financial Fraud</span></td>
+              <td><span class="pill pill-amber">Arrested</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-001"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">⚗ Crime Details — Walter White</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-red">Drug Manufacturing</span><span class="cdet-desc">Operated a meth lab inside a KSRTC bus; told conductor he was a chemistry teacher conducting a "practical exam" · <em>Critical · Devaraja Market Bus Stand, Mysuru · 2024-01-10</em></span></div>
+                <div class="cdet-item"><span class="cdet-type pill pill-amber">Financial Fraud</span><span class="cdet-desc">Meth income laundered through A1A Car Wash operated by Skyler White · <em>High · Station Road, Hubballi · 2024-05-01</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">002</td><td>Jesse Pinkman</td><td class="mono">1984-09-24</td><td>M</td><td>American</td>
+              <td>9809, Margo Street, Vijayanagar 2nd Stage, Mysuru</td>
+              <td><span class="pill pill-amber">Drug Possession</span> <span class="pill pill-green">Theft</span></td>
+              <td><span class="pill pill-red">Wanted</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-002"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">💊 Crime Details — Jesse Pinkman</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-amber">Drug Possession</span><span class="cdet-desc">Arrested with blue crystals labelled "Rock Candy — Not Meth"; label was handwritten · <em>High · Vijayanagar 4th Stage, Mysuru · 2024-02-14</em></span></div>
+                <div class="cdet-item"><span class="cdet-type pill pill-green">Theft</span><span class="cdet-desc">Mobile phone snatched near Devaraja Market bus stand; accused fled on a scooty · <em>Low · Devaraja Market, Mysuru · 2024-01-05</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">003</td><td>Gustavo Fring</td><td class="mono">1958-11-17</td><td>M</td><td>Chilean</td>
+              <td>Los Pollos Outlet, Koramangala 4th Block, Bengaluru</td>
+              <td><span class="pill pill-red">Money Laundering</span></td>
+              <td><span class="pill pill-green">Released</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-003"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">🍗 Crime Details — Gustavo Fring</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-red">Money Laundering</span><span class="cdet-desc">Ran an immaculate chicken franchise as a front; ₹47 crore in unaccounted turnover hidden inside weekly chicken delivery invoices · <em>Critical · Koramangala, Bengaluru · 2024-03-05</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">004</td><td>Saul Goodman</td><td class="mono">1960-11-12</td><td>M</td><td>American</td>
+              <td>Wexler-McGill Bldg, MG Road, Mangaluru</td>
+              <td><span class="pill pill-blue">Fraud &amp; Illegal Counsel</span></td>
+              <td><span class="pill pill-amber">Arrested</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-004"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">⚖ Crime Details — Saul Goodman</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-blue">Fraud &amp; Illegal Counsel</span><span class="cdet-desc">Provided dubious legal advice to 60 clients in one afternoon from a mall food court; business card read "Criminal Lawyer — emphasis on Criminal" · <em>Medium · Balmatta Road, Mangaluru · 2024-04-20</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">005</td><td>Skyler White</td><td class="mono">1970-08-11</td><td>F</td><td>American</td>
+              <td>308, Negra Arroyo Lane, Devaraja Market, Mysuru</td>
+              <td><span class="pill pill-amber">Financial Fraud</span></td>
+              <td><span class="pill pill-red">Wanted</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-005"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">🚗 Crime Details — Skyler White</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-amber">Financial Fraud</span><span class="cdet-desc">Laundered drug money through A1A Car Wash; gave customers ₹500 receipts for ₹50 washes; staff told to "not ask questions" · <em>High · Station Road, Hubballi · 2024-05-01</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">006</td><td>Hector Salamanca</td><td class="mono">1940-01-01</td><td>M</td><td>Mexican</td>
+              <td>Salamanca Compound, Near APMC Yard, Hubballi</td>
+              <td><span class="pill pill-red">Drug Trafficking</span></td>
+              <td><span class="pill pill-amber">Arrested</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-006"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">🔔 Crime Details — Hector Salamanca</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-red">Drug Trafficking</span><span class="cdet-desc">Ran a cross-state cartel supply chain; communicated orders exclusively by ringing a bell — took 40 minutes per instruction · <em>Critical · APMC Yard, Hubballi · 2024-05-10</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">007</td><td>Tuco Salamanca</td><td class="mono">1975-05-05</td><td>M</td><td>Mexican</td>
+              <td>Salamanca Compound, Near APMC Yard, Hubballi</td>
+              <td><span class="pill pill-red">Drug Trafficking</span> <span class="pill pill-blue">Drunk Driving</span> <span class="pill pill-amber">Robbery</span></td>
+              <td><span class="pill pill-amber">Arrested</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-007"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">💥 Crime Details — Tuco Salamanca</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-red">Drug Trafficking</span><span class="cdet-desc">Co-ran Salamanca cartel supply chain alongside Hector · <em>Critical · APMC Yard, Hubballi · 2024-05-10</em></span></div>
+                <div class="cdet-item"><span class="cdet-type pill pill-blue">Drunk Driving</span><span class="cdet-desc">Drove Innova at 120 kmph on city road at 2 AM; BAC 287 mg/100 ml — asked officer "is that a lot?" · <em>Medium · Hunsur Road, Mysuru · 2024-02-20</em></span></div>
+                <div class="cdet-item"><span class="cdet-type pill pill-amber">Robbery</span><span class="cdet-desc">Armed robbery at gold shop; snatched chain from customer on bike and sped away · <em>High · Sayyaji Rao Road, Mysuru · 2024-03-25</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">008</td><td>Mike Ehrmantraut</td><td class="mono">1945-04-03</td><td>M</td><td>American</td>
+              <td>Quiet Corner, Jayanagar 9th Block, Bengaluru</td>
+              <td><span class="pill pill-red">Contract Killing</span> <span class="pill pill-amber">Obstruction of Justice</span></td>
+              <td><span class="pill pill-green">Released</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-008"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">🌻 Crime Details — Mike Ehrmantraut</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-red">Contract Killing</span><span class="cdet-desc">Suspected of eliminating three Madrigal executives; left no evidence, no witnesses, and a very clean crime scene. Police found one sunflower seed · <em>Critical · Jayanagar, Bengaluru · 2024-05-18</em></span></div>
+                <div class="cdet-item"><span class="cdet-type pill pill-amber">Obstruction of Justice</span><span class="cdet-desc">Linked to Todd Alquist's evidence destruction operation · <em>High · Yelahanka, Bengaluru · 2024-06-01</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">009</td><td>Todd Alquist</td><td class="mono">1990-08-20</td><td>M</td><td>American</td>
+              <td>Aryan Brotherhood Chawl, Yelahanka, Bengaluru</td>
+              <td><span class="pill pill-amber">Obstruction of Justice</span></td>
+              <td><span class="pill pill-amber">Arrested</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-009"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">🍪 Crime Details — Todd Alquist</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-amber">Obstruction of Justice</span><span class="cdet-desc">Deleted CCTV footage from 4 locations, bribed two witnesses, and cheerfully offered arresting officers homemade biscuits · <em>High · Yelahanka, Bengaluru · 2024-06-01</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">010</td><td>Lydia Rodarte-Quayle</td><td class="mono">1977-03-22</td><td>F</td><td>American</td>
+              <td>Madrigal Electromotive Office, Whitefield, Bengaluru</td>
+              <td><span class="pill pill-amber">Cybercrime</span> <span class="pill pill-red">Money Laundering</span></td>
+              <td><span class="pill pill-red">Wanted</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-010"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">💻 Crime Details — Lydia Rodarte-Quayle</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-amber">Cybercrime</span><span class="cdet-desc">Ran a KYC phone scam posing as RBI officer; victim transferred ₹4.8 lakh · <em>High · Gokulam, Mysuru · 2024-03-12</em></span></div>
+                <div class="cdet-item"><span class="cdet-type pill pill-red">Money Laundering</span><span class="cdet-desc">Linked to Gustavo Fring's laundering operation via Madrigal Electromotive supply chain · <em>Critical · Koramangala, Bengaluru · 2024-03-05</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">011</td><td>Joffrey Baratheon</td><td class="mono">1987-05-01</td><td>M</td><td>Westerosi</td>
+              <td>Red Keep Apartments, Brigade Road, Bengaluru</td>
+              <td><span class="pill pill-amber">Assault</span> <span class="pill pill-green">Public Nuisance</span></td>
+              <td><span class="pill pill-amber">Arrested</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-011"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">👑 Crime Details — Joffrey Baratheon</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-amber">Assault</span><span class="cdet-desc">Assaulted a street vendor for not bowing; ordered guards to arrest the crowd for "witnessing his embarrassment" · <em>High · Brigade Road, Bengaluru · 2024-06-10</em></span></div>
+                <div class="cdet-item"><span class="cdet-type pill pill-green">Public Nuisance</span><span class="cdet-desc">Played music at 114 dB past midnight during birthday party; 14 complaints filed by residents · <em>Low · Srirampura, Mysuru · 2024-04-14</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">012</td><td>Cersei Lannister</td><td class="mono">1973-10-15</td><td>F</td><td>Westerosi</td>
+              <td>Red Keep Apartments, Brigade Road, Bengaluru</td>
+              <td><span class="pill pill-amber">Cheating / Fraud</span></td>
+              <td><span class="pill pill-red">Wanted</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-012"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">🍷 Crime Details — Cersei Lannister</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-amber">Cheating / Fraud</span><span class="cdet-desc">Suspected involvement in fake job fraud ring run by Petyr Baelish; remains untouchable — no arrests made so far · <em>High · Vijayanagar 4th Stage, Mysuru · 2024-03-01</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">013</td><td>Petyr Baelish</td><td class="mono">1970-07-07</td><td>M</td><td>Westerosi</td>
+              <td>Littlefinger Enterprises, Commercial Street, Bengaluru</td>
+              <td><span class="pill pill-red">Extortion</span> <span class="pill pill-amber">Cheating / Fraud</span></td>
+              <td><span class="pill pill-red">Wanted</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-013"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">🗝 Crime Details — Petyr Baelish</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-red">Extortion</span><span class="cdet-desc">Ran a large extortion racket under cover of a real estate firm; victims were noblemen, merchants, and one confused software engineer · <em>Critical · Commercial Street, Bengaluru · 2024-06-20</em></span></div>
+                <div class="cdet-item"><span class="cdet-type pill pill-amber">Cheating / Fraud</span><span class="cdet-desc">Issued fake job offer letters to 30 unemployed youth; each paid ₹25,000 as processing fee and received nothing · <em>High · Vijayanagar 4th Stage, Mysuru · 2024-03-01</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">014</td><td>Ramsay Bolton</td><td class="mono">1989-03-20</td><td>M</td><td>Westerosi</td>
+              <td>Dreadfort Layout, Rajajinagar, Bengaluru</td>
+              <td><span class="pill pill-red">Kidnapping &amp; Torture</span></td>
+              <td><span class="pill pill-amber">Arrested</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-014"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">🏚 Crime Details — Ramsay Bolton</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-red">Kidnapping &amp; Torture</span><span class="cdet-desc">Abducted a rival and held him captive for 3 weeks in a Rajajinagar farmhouse; complained the screaming "disrupted his sleep schedule" · <em>Critical · Rajajinagar, Bengaluru · 2024-07-01</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">015</td><td>Theon Greyjoy</td><td class="mono">1988-11-10</td><td>M</td><td>Westerosi</td>
+              <td>Iron Islands Hostel, Old Port Road, Mangaluru</td>
+              <td><span class="pill pill-green">Trespassing</span></td>
+              <td><span class="pill pill-green">Released</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-015"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">🚪 Crime Details — Theon Greyjoy</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-green">Trespassing</span><span class="cdet-desc">Broke into neighbour's house repeatedly to steal WiFi password and eat from their fridge · <em>Low · Jayalakshmipuram, Mysuru · 2024-04-08</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">016</td><td>Gregor Clegane</td><td class="mono">1975-06-25</td><td>M</td><td>Westerosi</td>
+              <td>Mountain Quarters, Anekal, Bengaluru</td>
+              <td><span class="pill pill-red">Murder</span></td>
+              <td><span class="pill pill-amber">Arrested</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-016"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">⛰ Crime Details — Gregor Clegane</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-red">Murder</span><span class="cdet-desc">Killed three men during a road rage incident on NICE Road; witnesses described the accused as "very large and unhappy about traffic" · <em>Critical · NICE Road, Bengaluru · 2024-07-20</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">017</td><td>Euron Greyjoy</td><td class="mono">1969-08-14</td><td>M</td><td>Westerosi</td>
+              <td>Iron Islands Hostel, Old Port Road, Mangaluru</td>
+              <td><span class="pill pill-red">Arms Smuggling</span></td>
+              <td><span class="pill pill-red">Wanted</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-017"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">⚓ Crime Details — Euron Greyjoy</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-red">Arms Smuggling</span><span class="cdet-desc">Intercepted near Mangaluru port with a shipment of illegal weapons hidden under 400 kg of dried fish; said he was a fisherman · <em>Critical · Old Port Road, Mangaluru · 2024-07-10</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">018</td><td>Tywin Lannister</td><td class="mono">1943-11-06</td><td>M</td><td>Westerosi</td>
+              <td>Lannister Towers, Lavelle Road, Bengaluru</td>
+              <td><span class="pill pill-blue">No Active Charges</span></td>
+              <td><span class="pill pill-green">Released</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-018"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">🏛 Record — Tywin Lannister</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-blue">No Active Charges</span><span class="cdet-desc">Released on insufficient evidence. Suspected mastermind behind multiple financial schemes but no charges could be proven. Varys (Intelligence Officer) still investigating.</span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">019</td><td>Viserys Targaryen</td><td class="mono">1983-06-01</td><td>M</td><td>Westerosi</td>
+              <td>Vaes Dothrak PG, Hubballi Bus Stand, Hubballi</td>
+              <td><span class="pill pill-amber">Domestic Violence</span></td>
+              <td><span class="pill pill-amber">Arrested</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-019"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">🐉 Crime Details — Viserys Targaryen</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-amber">Domestic Violence</span><span class="cdet-desc">Repeated physical and verbal abuse of spouse; children also present during incident — very on-brand · <em>High · Kuvempunagar, Mysuru · 2024-02-10</em></span></div>
+              </div>
+            </td></tr>
+
+            <tr class="crim-row" onclick="toggleCrimDetail(this)">
+              <td class="mono">020</td><td>Jaqen H'ghar</td><td class="mono">1978-01-01</td><td>M</td><td>Unknown</td>
+              <td>House of Black and White, Russell Market, Bengaluru</td>
+              <td><span class="pill pill-amber">Cybercrime</span></td>
+              <td><span class="pill pill-red">Wanted</span></td>
+            </tr>
+            <tr class="crim-detail" id="det-020"><td colspan="8">
+              <div class="crim-detail-box">
+                <div class="cdet-title">🎭 Crime Details — Jaqen H'ghar</div>
+                <div class="cdet-item"><span class="cdet-type pill pill-amber">Cybercrime</span><span class="cdet-desc">Suspected in KYC phone scam alongside Lydia Rodarte-Quayle; identity unverifiable — gave 4 different names during questioning, all equally plausible · <em>High · Gokulam, Mysuru · 2024-03-12</em></span></div>
+              </div>
+            </td></tr>
           </tbody>
         </table>
       </div>
@@ -1087,12 +1374,39 @@ ORDER BY   number_of_accused DESC;</pre></div>
     card.classList.toggle('open');
   }
 
+  function toggleCrimDetail(row) {
+    const num = row.cells[0].textContent.trim();
+    const detRow = document.getElementById('det-' + num);
+    if (!detRow) return;
+    const isOpen = detRow.classList.contains('open');
+    // close all others first
+    document.querySelectorAll('.crim-detail.open').forEach(r => r.classList.remove('open'));
+    document.querySelectorAll('.crim-row.expanded').forEach(r => r.classList.remove('expanded'));
+    if (!isOpen) {
+      detRow.classList.add('open');
+      row.classList.add('expanded');
+    }
+  }
+
   function filterTable(tableId, query) {
     const q = query.toLowerCase();
-    const rows = document.querySelectorAll('#' + tableId + ' tbody tr');
-    rows.forEach(row => {
-      row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
-    });
+    if (tableId === 'criminals-table') {
+      // close all detail rows first
+      document.querySelectorAll('.crim-detail.open').forEach(r => r.classList.remove('open'));
+      document.querySelectorAll('.crim-row.expanded').forEach(r => r.classList.remove('expanded'));
+      document.querySelectorAll('#' + tableId + ' tbody .crim-row').forEach(row => {
+        const match = row.textContent.toLowerCase().includes(q);
+        row.style.display = match ? '' : 'none';
+        const num = row.cells[0].textContent.trim();
+        const det = document.getElementById('det-' + num);
+        if (det) det.style.display = 'none';
+      });
+    } else {
+      const rows = document.querySelectorAll('#' + tableId + ' tbody tr');
+      rows.forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    }
   }
 </script>
 </body>
